@@ -3,6 +3,9 @@ bin-debug/
 bin-release/
 [Oo]bj/
 [Bb]in/
+*.o
+myCode_blynk
+blynk 
 
 # Other files and folders
 .settings/
