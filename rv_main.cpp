@@ -24,7 +24,7 @@
 static BlynkTransportSocket _blynkTransport;
 BlynkSocket Blynk(_blynkTransport);
 #define DHT11_Pin  22		//define the pin of sensor
-#define FUDGE 1/.1747		//Voltage Divide Resistance 
+#define FUDGE 5.6840007		//Voltage Divide Resistance 
 static const char *auth, *serv;
 static uint16_t port;
 float ds18b20(float results[]);
@@ -77,7 +77,7 @@ BLYNK_WRITE(V4)
 
 void setup()
 {
-    Blynk.begin(auth, serv, port);
+    	Blynk.begin(auth, serv, port);
    
 }
 
