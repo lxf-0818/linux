@@ -24,12 +24,12 @@
 static BlynkTransportSocket _blynkTransport;
 BlynkSocket Blynk(_blynkTransport);
 #define DHT11_Pin  22		//define the pin of sensor
-#define FUDGE 5.6840007		//Voltage Divide Resistance 
+#define R_RATIO 5.6840007	//Voltage Divide Resistance =  1/(R2/R1+R2)  (where R1 = 47K and R2 = 220K) 
 static const char *auth, *serv;
 static uint16_t port;
 float ds18b20(float results[]);
 int readADC(float results[]);
-float fudge = FUDGE;
+float fudge = R_RATIO;
 #include <BlynkWidgets.h>
 
 BlynkTimer tmr;
@@ -71,7 +71,7 @@ BLYNK_WRITE(V5)
 BLYNK_WRITE(V4)
 {
 	//reset 
-	fudge = FUDGE;
+	fudge = R_RATIO;
     	Blynk.virtualWrite(V5, fudge);
 }
 

@@ -24,7 +24,7 @@
 static BlynkTransportSocket _blynkTransport;
 BlynkSocket Blynk(_blynkTransport);
 #define DHT11_Pin  22		//define the pin of sensor
-#define R_RATIO 5.6840007		//Voltage Divide Resistance =  1/(R2/R1+R2)  (where R1 = 47K and R2 = 220K) 
+#define R_RATIO 5.6840007	//Voltage Divide Resistance =  1/(R2/R1+R2)  (where R1 = 47K and R2 = 220K) 
 static const char *auth, *serv;
 static uint16_t port;
 float ds18b20(float results[]);
