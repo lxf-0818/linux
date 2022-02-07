@@ -50,7 +50,7 @@ ifeq ($(target),raspberry)
 	LDFLAGS += -lwiringPi
 endif
 
-SOURCES=main.cpp \
+SOURCES=$(file) \
 	../src/utility/BlynkDebug.cpp \
 	../src/utility/BlynkHandlers.cpp \
 	../src/utility/BlynkTimer.cpp \
