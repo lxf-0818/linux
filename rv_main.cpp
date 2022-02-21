@@ -9,6 +9,8 @@
 
 //#define BLYNK_DEBUG
 #define BLYNK_PRINT stdout
+#define IP_ADDR_ESP8266 "10.0.0.67"
+#define PORT "8888"
 
 #ifdef RASPBERRY
   #include <BlynkApiWiringPi.h>
@@ -19,6 +21,9 @@
 #include <BlynkOptionsParser.h>
 #include "./myCode_blynk/DHT.hpp"
 #include <fstream>
+#include <string.h>
+#include <stdio.h>
+
 
 
 static BlynkTransportSocket _blynkTransport;
@@ -29,6 +34,7 @@ static const char *auth, *serv;
 static uint16_t port;
 float ds18b20(float results[]);
 int readADC(float results[]);
+int read_temp_esp8266(char *ip, char * port,char * temper);
 float fudge = R_RATIO;
 #include <BlynkWidgets.h>
 
@@ -46,21 +52,34 @@ void getCPUTemperature(float *v){// sub function used to print CPU temperature
 
 BLYNK_WRITE(V0)
 {
+    
+	Blynk.virtualWrite(V7, 255);
+	Blynk.virtualWrite(V8, 0);
+    	float v,results[4] ;
+    	getCPUTemperature(&v);
+    	Blynk.virtualWrite(V1,  v); 
 
-    DHT dht;			//create a DHT class object
-    int chk;
-    chk = dht.readDHT11(DHT11_Pin);
-    if(chk == DHTLIB_OK)
-    	Blynk.virtualWrite(V6, dht.temperature * 9.0 / 5.0 + 32.0); 
+	char temper[80];
+	read_temp_esp8266(IP_ADDR_ESP8266,PORT,temper);
+	char *token = strtok(temper,",");
+      	Blynk.virtualWrite(V6, token); 
+	//  
+	while (token !=NULL) {
+	   printf("%s\n",token);
+	   token = strtok(NULL,",");	
+	}
 
-    float v,results[4] ;
-    getCPUTemperature(&v);
-    Blynk.virtualWrite(V1,  v); 
+    	//DHT dht;			//create a DHT class object
+      	//int chk = dht.readDHT11(DHT11_Pin);
+      	//if(chk == DHTLIB_OK)
+      	//	Blynk.virtualWrite(V6, dht.temperature * 9.0 / 5.0 + 32.0); 
 
-    readADC(results);
-    Blynk.virtualWrite(V2, results[0]*fudge);
-    Blynk.virtualWrite(V3, results[1]);
-    Blynk.virtualWrite(V5, fudge);
+    	readADC(results);
+    	Blynk.virtualWrite(V2, results[0]*fudge);
+    	Blynk.virtualWrite(V3, results[1]);
+    	Blynk.virtualWrite(V5, fudge);
+	Blynk.virtualWrite(V8, 255);
+	Blynk.virtualWrite(V7, 0);
 }
 BLYNK_WRITE(V5)
 {

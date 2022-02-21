@@ -57,6 +57,7 @@ SOURCES=$(file) \
 	./myCode_blynk/DHT.cpp  \
 	./myCode_blynk/DHT11.cpp \
 	./myCode_blynk/ADS1115_mult.cpp \
+	./myCode_blynk/client.cpp \
 	./myCode_blynk/ds18b20.cpp 
 	
 

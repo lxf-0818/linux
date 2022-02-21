@@ -19,14 +19,8 @@ static uint16_t port;
 
 #include <BlynkWidgets.h>
 BlynkTimer timer;
-#include <DHT.h>
-#define DHTTYPE DHT11 // DHT 11
-define DHTPin  22 
-DHT dht(DHTPIN, DHTTYPE);
 
 void foo() {
-	float h = dht.readHumidity();
-        float t = dht.readTemperature(); // or dht.readTemperature(true) for Fahrenheit
 
 	int rowIndex = 0;
     	float results[4] ;
