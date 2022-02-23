@@ -34,7 +34,8 @@ static const char *auth, *serv;
 static uint16_t port;
 float ds18b20(float results[]);
 int readADC(float results[]);
-int read_temp_esp8266(char *ip, char * port,char * temper);
+int read_temp_esp8266(char * temp);
+int test_esp8266();
 float fudge = R_RATIO;
 #include <BlynkWidgets.h>
 
@@ -59,20 +60,15 @@ BLYNK_WRITE(V0)
     	getCPUTemperature(&v);
     	Blynk.virtualWrite(V1,  v); 
 
-	char temper[80];
-	read_temp_esp8266(IP_ADDR_ESP8266,PORT,temper);
-	char *token = strtok(temper,",");
+	char temp[80];
+	read_temp_esp8266(temp);
+	char *token = strtok(temp,",");
       	Blynk.virtualWrite(V6, token); 
 	//  
 	while (token !=NULL) {
-	   printf("%s\n",token);
+	   //printf("%s\n",token);
 	   token = strtok(NULL,",");	
 	}
-
-    	//DHT dht;			//create a DHT class object
-      	//int chk = dht.readDHT11(DHT11_Pin);
-      	//if(chk == DHTLIB_OK)
-      	//	Blynk.virtualWrite(V6, dht.temperature * 9.0 / 5.0 + 32.0); 
 
     	readADC(results);
     	Blynk.virtualWrite(V2, results[0]*fudge);
@@ -92,6 +88,12 @@ BLYNK_WRITE(V4)
 	//reset 
 	fudge = R_RATIO;
     	Blynk.virtualWrite(V5, fudge);
+}
+BLYNK_WRITE(V9)
+{
+	Blynk.virtualWrite(V7, 255);
+	test_esp8266();
+	Blynk.virtualWrite(V7, 0);
 }
 
 void setup()
