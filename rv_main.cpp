@@ -58,20 +58,22 @@ BLYNK_WRITE(V0)
 	Blynk.virtualWrite(V8, 0);
     	float v,results[4] ;
     	getCPUTemperature(&v);
+    	Blynk.virtualWrite(V1, 0);
     	Blynk.virtualWrite(V1,  v); 
 
 	char temp[80];
 	read_temp_esp8266(temp);
 	char *token = strtok(temp,",");
+    	Blynk.virtualWrite(V6, 0);
       	Blynk.virtualWrite(V6, token); 
-	//  
 	while (token !=NULL) {
-	   //printf("%s\n",token);
 	   token = strtok(NULL,",");	
 	}
 
     	readADC(results);
+    	Blynk.virtualWrite(V2, 0);
     	Blynk.virtualWrite(V2, results[0]*fudge);
+    	Blynk.virtualWrite(V3, 0);
     	Blynk.virtualWrite(V3, results[1]);
     	Blynk.virtualWrite(V5, fudge);
 	Blynk.virtualWrite(V8, 255);
@@ -101,7 +103,6 @@ void setup()
     	Blynk.begin(auth, serv, port);
    
 }
-
 void loop()
 {
     Blynk.run();
