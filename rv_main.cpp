@@ -23,20 +23,21 @@
 #include <fstream>
 #include <string.h>
 #include <stdio.h>
-
-
+#include <unistd.h>
 
 static BlynkTransportSocket _blynkTransport;
 BlynkSocket Blynk(_blynkTransport);
 #define DHT11_Pin  22		//define the pin of sensor
 #define R_RATIO 5.6840007	//Voltage Divide Resistance =  1/(R2/R1+R2)  (where R1 = 47K and R2 = 220K) 
+#define MBR_RATIO 5.59	//Voltage Divide Resistance =  1/(R2/R1+R2)  (where R1 = 47K and R2 = 220K) 
 static const char *auth, *serv;
 static uint16_t port;
 float ds18b20(float results[]);
 int readADC(float results[]);
-int read_temp_esp8266(char * temp);
+int read_esp8266(char* msg,char * temp);
 int test_esp8266();
 float fudge = R_RATIO;
+float fudge_mb = MBR_RATIO;
 #include <BlynkWidgets.h>
 
 BlynkTimer tmr;
@@ -56,26 +57,36 @@ BLYNK_WRITE(V0)
     
 	Blynk.virtualWrite(V7, 255);
 	Blynk.virtualWrite(V8, 0);
+
     	float v,results[4] ;
     	getCPUTemperature(&v);
-    	Blynk.virtualWrite(V1, 0);
     	Blynk.virtualWrite(V1,  v); 
 
 	char temp[80];
-	read_temp_esp8266(temp);
+	read_esp8266("DHT",temp);
 	char *token = strtok(temp,",");
-    	Blynk.virtualWrite(V6, 0);
       	Blynk.virtualWrite(V6, token); 
 	while (token !=NULL) {
 	   token = strtok(NULL,",");	
 	}
+	float tokens[4];
+	read_esp8266("MB",temp);
+	token = strtok(temp,",");
+	int j =0;
+	while (token !=NULL) {
+           tokens[j++] = atof(token);
+	   token = strtok(NULL,",");	
+	}
+    	Blynk.virtualWrite(V2, tokens[0]*fudge_mb);
+    	//Blynk.virtualWrite(V3, tokens[1]*fudge_mb); // engine battery when wired
+    	Blynk.virtualWrite(V3, tokens[1]); // esp8266 v3.3
 
-    	readADC(results);
-    	Blynk.virtualWrite(V2, 0);
-    	Blynk.virtualWrite(V2, results[0]*fudge);
-    	Blynk.virtualWrite(V3, 0);
-    	Blynk.virtualWrite(V3, results[1]);
+    	//readADC(results);
+    	//Blynk.virtualWrite(V2, results[0]*fudge);
+    	//Blynk.virtualWrite(V3, results[1]);
     	Blynk.virtualWrite(V5, fudge);
+    	Blynk.virtualWrite(V9, fudge_mb);
+
 	Blynk.virtualWrite(V8, 255);
 	Blynk.virtualWrite(V7, 0);
 }
@@ -84,6 +95,11 @@ BLYNK_WRITE(V5)
 	//Read Custom fudge and apply
 	fudge = param.asFloat();
 }
+BLYNK_WRITE(V9)
+{
+	//Read Custom fudge and apply
+	fudge_mb = param.asFloat();
+}
 
 BLYNK_WRITE(V4)
 {
@@ -91,11 +107,11 @@ BLYNK_WRITE(V4)
 	fudge = R_RATIO;
     	Blynk.virtualWrite(V5, fudge);
 }
-BLYNK_WRITE(V9)
+BLYNK_WRITE(V10)
 {
-	Blynk.virtualWrite(V7, 255);
-	test_esp8266();
-	Blynk.virtualWrite(V7, 0);
+	//reset 
+	fudge_mb = MBR_RATIO;
+    	Blynk.virtualWrite(V9, fudge_mb);
 }
 
 void setup()
