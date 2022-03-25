@@ -25,11 +25,13 @@
 #include <stdio.h>
 #include <unistd.h>
 
+BlynkTimer timer;
+
 static BlynkTransportSocket _blynkTransport;
 BlynkSocket Blynk(_blynkTransport);
 #define DHT11_Pin  22		//define the pin of sensor
 #define R_RATIO 5.6840007	//Voltage Divide Resistance =  1/(R2/R1+R2)  (where R1 = 47K and R2 = 220K) 
-#define MBR_RATIO 5.59	//Voltage Divide Resistance =  1/(R2/R1+R2)  (where R1 = 47K and R2 = 220K) 
+#define MBR_RATIO 5.63	//Voltage Divide Resistance =  1/(R2/R1+R2)  (where R1 = 47K and R2 = 220K) 
 static const char *auth, *serv;
 static uint16_t port;
 float ds18b20(float results[]);
@@ -40,7 +42,10 @@ float fudge = R_RATIO;
 float fudge_mb = MBR_RATIO;
 #include <BlynkWidgets.h>
 
-BlynkTimer tmr;
+void getADC(){
+	char temp[80];
+	read_esp8266("ADC",temp);
+}
 void getCPUTemperature(float *v){// sub function used to print CPU temperature
     FILE *fp;
     char str_temp[15];
@@ -70,7 +75,7 @@ BLYNK_WRITE(V0)
 	   token = strtok(NULL,",");	
 	}
 	float tokens[4];
-	read_esp8266("MB",temp);
+	read_esp8266("ADC",temp);
 	token = strtok(temp,",");
 	int j =0;
 	while (token !=NULL) {
@@ -117,12 +122,13 @@ BLYNK_WRITE(V10)
 void setup()
 {
     	Blynk.begin(auth, serv, port);
-   
+  	timer.setInterval(1000L*600, getADC);
 }
 void loop()
 {
     Blynk.run();
-    tmr.run();
+    timer.run();
+    Blynk.virtualWrite(V3, 10); // esp8266 v3.3
 }
 
 
@@ -139,3 +145,8 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+BLYNK_WRITE(V11)
+{
+	char temp[80];
+	read_esp8266("CLR",temp);
+}
