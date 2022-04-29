@@ -35,9 +35,7 @@ BlynkSocket Blynk(_blynkTransport);
 static const char *auth, *serv;
 static uint16_t port;
 float ds18b20(float results[]);
-int readADC(float results[]);
 int read_esp8266(char* msg,char * temp);
-int test_esp8266();
 void refresh();
 float fudge = R_RATIO;
 float fudge_mb = MBR_RATIO;
@@ -56,30 +54,41 @@ void getCPUTemperature(float *v){
 
 void refresh(){
     
-    float v,results[4],tokens[4];
-	char strReturn[80];
+    float v,results[4],tokens[5];
+	char str[80],cmd[20];
 	int j =0;
 
     getCPUTemperature(&v);
-    Blynk.virtualWrite(V1,  v); 
+    //Blynk.virtualWrite(V1,  v); 
   
-	read_esp8266("DHT",strReturn);
-	char *token = strtok(strReturn,",");
+	read_esp8266("DHT",str);
+	char *token = strtok(str,",");
 	while (token !=NULL) {
 		tokens[j++] = atof(token);
 	   	token = strtok(NULL,",");	
 	}
     Blynk.virtualWrite(V6, tokens[0]); 
-	read_esp8266("ADC",strReturn);
-	token = strtok(strReturn,",");
+    Blynk.virtualWrite(V1, tokens[1]); 
+
+	sprintf(cmd,"ADC_%f_%f_%f_%f",fudge,fudge_mb,0.0,0.0);
+	//printf("cmd %s\n",cmd);
+	read_esp8266(cmd,str);
+	token = strtok(str,",");
 	j =0;
 	while (token !=NULL) {
 		tokens[j++] = atof(token);
 	   	token = strtok(NULL,",");	
 	}
-    Blynk.virtualWrite(V2, tokens[0]*fudge);
+    //Blynk.virtualWrite(V2, tokens[0]*fudge);
+    Blynk.virtualWrite(V2, tokens[0]);
     //Blynk.virtualWrite(V3, tokens[1]*fudge_mb); // engine battery when wired
     Blynk.virtualWrite(V3, tokens[1]); // esp8266 v3.3
+	// check if "low V is trigger"
+	if (tokens[4])
+		Blynk.virtualWrite(V12, 255); //set V12 led to full brigthness
+	else
+		Blynk.virtualWrite(V12, 0);
+
 
 }
 void setup()

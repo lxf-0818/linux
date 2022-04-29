@@ -1,1 +1,1 @@
-sudo ./blynk-library/linux/blynk --token=fsUGcWZ7qN_egijniUgXnAzz8qtCWdwJ
+sudo /home/pi//blynk-library/linux/blynk --token=fsUGcWZ7qN_egijniUgXnAzz8qtCWdwJ
