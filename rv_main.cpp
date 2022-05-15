@@ -20,7 +20,6 @@
 #endif
 #include <BlynkSocket.h>
 #include <BlynkOptionsParser.h>
-#include "./myCode_blynk/DHT.hpp"
 #include <fstream>
 #include <string.h>
 #include <stdio.h>
@@ -61,27 +60,29 @@ void refresh(){
     getCPUTemperature(&v);
     //Blynk.virtualWrite(V1,  v); 
   
-	read_esp8266("DHT",str);
-	char *token = strtok(str,",");
+	read_esp8266("MCP",str);
+    Blynk.virtualWrite(V6, str); 
+
+	read_esp8266("DS0",str);
+	char * token = strtok(str,",");
+	j =0;
 	while (token !=NULL) {
 		tokens[j++] = atof(token);
 	   	token = strtok(NULL,",");	
 	}
-    Blynk.virtualWrite(V6, tokens[0]); 
-    Blynk.virtualWrite(V1, tokens[1]); 
+    Blynk.virtualWrite(V1, tokens[0]); 
 
 	sprintf(cmd,"ADC_%f_%f_%f_%f",fudge,fudge_mb,0.0,0.0);
-	//printf("cmd %s\n",cmd);
 	read_esp8266(cmd,str);
+	//printf("%s\n",str);
 	token = strtok(str,",");
 	j =0;
 	while (token !=NULL) {
 		tokens[j++] = atof(token);
 	   	token = strtok(NULL,",");	
 	}
-    //Blynk.virtualWrite(V2, tokens[0]*fudge);
     Blynk.virtualWrite(V2, tokens[0]);
-    //Blynk.virtualWrite(V3, tokens[1]*fudge_mb); // engine battery when wired
+    //Blynk.virtualWrite(V3, tokens[1]); // engine battery when wired
     Blynk.virtualWrite(V3, tokens[1]); // esp8266 v3.3
 	// check if "low V is trigger"
 	if (tokens[4])
