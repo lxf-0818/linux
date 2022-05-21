@@ -9,21 +9,15 @@
 
 //#define BLYNK_DEBUG
 #define BLYNK_PRINT stdout
-#define IP_ADDR_ESP8266 "10.0.0.67"
 #define PORT "8888"
-#define BLYNK_RED       "#D3435C"
 
-#ifdef RASPBERRY
-  #include <BlynkApiWiringPi.h>
-#else
-  #include <BlynkApiLinux.h>
-#endif
+#include <BlynkApiWiringPi.h>
 #include <BlynkSocket.h>
 #include <BlynkOptionsParser.h>
 #include <fstream>
 #include <string.h>
 #include <stdio.h>
-#include <unistd.h>
+//#include <unistd.h>
 
 BlynkTimer timer;
 
@@ -157,4 +151,19 @@ BLYNK_WRITE(V10)
 	fudge_mb = MBR_RATIO;
     Blynk.virtualWrite(V9, fudge_mb);
 }
-
+BLYNK_WRITE(V14) {
+	
+	char str[80];
+	char devices[][4] = {"ADC","DS0","MCP","ALL"};
+  	int index =  param.asInt();
+	if (index !=4) {
+		sprintf(str,"RST_%s",devices[index-1]);
+		read_esp8266(str,str);
+	}
+	else {
+		for (int i =0 ;i<3;i++) {	
+			sprintf(str,"RST_%s",devices[i]);
+			read_esp8266(str,str);
+		}
+	}
+}
