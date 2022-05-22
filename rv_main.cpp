@@ -51,9 +51,7 @@ void refresh(){
 	char str[80],cmd[20];
 	int j =0;
 
-    getCPUTemperature(&v);
-    //Blynk.virtualWrite(V1,  v); 
-  
+    Blynk.setProperty(V6,  "label",  "Inside Temp")  ;
 	read_esp8266("MCP",str);
     Blynk.virtualWrite(V6, str); 
 
@@ -166,4 +164,11 @@ BLYNK_WRITE(V14) {
 			read_esp8266(str,str);
 		}
 	}
+}
+BLYNK_WRITE(V13)
+{
+	float v ;
+    getCPUTemperature(&v);
+    Blynk.virtualWrite(V6,  v); 
+    Blynk.setProperty(V6,  "label",  "Pi CPU Temperature")  ;
 }
