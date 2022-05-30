@@ -10,6 +10,11 @@
 //#define BLYNK_DEBUG
 #define BLYNK_PRINT stdout
 #define PORT "8888"
+#define BLYNK_GREEN     "#23C48E"
+#define BLYNK_BLUE      "#04C0F8"
+#define BLYNK_YELLOW    "#ED9D00"
+#define BLYNK_RED       "#D3435C"
+#define BLYNK_DARK_BLUE "#5F7CD8"
 
 #include <BlynkApiWiringPi.h>
 #include <BlynkSocket.h>
@@ -62,6 +67,7 @@ void refresh(){
 		tokens[j++] = atof(token);
 	   	token = strtok(NULL,",");	
 	}
+    Blynk.setProperty(V1,  "label",  "Outside Temp")  ;
     Blynk.virtualWrite(V1, tokens[0]); 
 
 	sprintf(cmd,"ADC_%f_%f_%f_%f",fudge,fudge_mb,0.0,0.0);
@@ -73,14 +79,18 @@ void refresh(){
 		tokens[j++] = atof(token);
 	   	token = strtok(NULL,",");	
 	}
+    Blynk.setProperty(V2,  "label",  "house voltage")  ;
     Blynk.virtualWrite(V2, tokens[0]);
     //Blynk.virtualWrite(V3, tokens[1]); // engine battery when wired
+    Blynk.setProperty(V3,  "label",  "esp8266 voltae")  ;
     Blynk.virtualWrite(V3, tokens[1]); // esp8266 v3.3
 	// check if "low V is trigger"
-	if (tokens[4])
-		Blynk.virtualWrite(V12, 255); //set V12 led to full brigthness
-	else
-		Blynk.virtualWrite(V12, 0);
+	if (tokens[4]){
+		Blynk.setProperty(V2, "color", BLYNK_RED); 
+	}
+	else {
+		Blynk.setProperty(V2, "color", BLYNK_GREEN);
+   }
 
 
 }
@@ -152,23 +162,48 @@ BLYNK_WRITE(V10)
 BLYNK_WRITE(V14) {
 	
 	char str[80];
-	char devices[][4] = {"ADC","DS0","MCP","ALL"};
+	char devices[][5] = {"ADC","DS0","MCP","BME","ALL"};
   	int index =  param.asInt();
-	if (index !=4) {
-		sprintf(str,"RST_%s",devices[index-1]);
-		read_esp8266(str,str);
-	}
-	else {
-		for (int i =0 ;i<3;i++) {	
-			sprintf(str,"RST_%s",devices[i]);
+	switch (index ) {
+		case 5:
+			for (int i =0 ;i<4;i++) {	
+				sprintf(str,"RST_%s",devices[i]);
+				read_esp8266(str,str);
+			}
+			break;
+		default:
+			sprintf(str,"RST_%s",devices[index-1]);
 			read_esp8266(str,str);
-		}
+			break ;
 	}
 }
-BLYNK_WRITE(V13)
-{
-	float v ;
-    getCPUTemperature(&v);
-    Blynk.virtualWrite(V6,  v); 
-    Blynk.setProperty(V6,  "label",  "Pi CPU Temperature")  ;
+BLYNK_WRITE(V15) {
+	char str[80];
+	float tokens[5],v;
+  	int index =  param.asInt();
+	int i =0;
+	char *token ;
+	switch (index ) {
+  		case 1:
+			read_esp8266("BME",str);
+			token = strtok(str,"_");
+			while (token !=NULL) {
+				tokens[i++] = atof(token);
+	   			token = strtok(NULL,"_");	
+			}
+    		Blynk.setProperty(V6,  "label",  "BME Temp")  ;
+    		Blynk.virtualWrite(V6, tokens[0]); 
+    		Blynk.setProperty(V1,  "label",  "BME Pressue")  ;
+    		Blynk.virtualWrite(V1, tokens[1]); 
+    		Blynk.setProperty(V2,  "label",  "BME  ~Altitude")  ;
+    		Blynk.virtualWrite(V2, tokens[2]); 
+    		Blynk.setProperty(V3,  "label",  "BME Humidity")  ;
+    		Blynk.virtualWrite(V3, tokens[3]); 
+			break;
+		case 2:
+    		getCPUTemperature(&v);
+    		Blynk.virtualWrite(V6,  v); 
+    		Blynk.setProperty(V6,  "label",  "Pi CPU Temperature")  ;
+			break;
+	}
 }
