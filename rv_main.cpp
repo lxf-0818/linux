@@ -23,6 +23,8 @@
 #include <string.h>
 #include <stdio.h>
 //#include <unistd.h>
+#include <dirent.h>
+
 
 BlynkTimer timer;
 
@@ -206,4 +208,24 @@ BLYNK_WRITE(V15) {
     		Blynk.setProperty(V6,  "label",  "Pi CPU Temperature")  ;
 			break;
 	}
+}
+BLYNK_WRITE(V16) {
+	char devices[][7] = {"ip_bme","ip_adc","ip_mcp","ip_ds0"};
+    DIR *d;
+    struct dirent *dir;
+    for (int i =0;i<4;i++) {
+        d = opendir(".");
+        if (d)
+        {
+            while ((dir = readdir(d)) != NULL)
+            {
+                if (strstr(dir->d_name,devices[i])){
+                	printf("%s\n", dir->d_name);
+			//		remove(dir->d_name);
+				}	
+             }
+            closedir(d);
+        }
+    }
+
 }
