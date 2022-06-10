@@ -188,10 +188,10 @@ BLYNK_WRITE(V15) {
 	switch (index ) {
   		case 1:
 			read_esp8266("BME",str);
-			token = strtok(str,"_");
+			token = strtok(str,",");
 			while (token !=NULL) {
 				tokens[i++] = atof(token);
-	   			token = strtok(NULL,"_");	
+	   			token = strtok(NULL,",");	
 			}
     		Blynk.setProperty(V6,  "label",  "BME Temp")  ;
     		Blynk.virtualWrite(V6, tokens[0]); 
@@ -228,4 +228,20 @@ BLYNK_WRITE(V16) {
         }
     }
 
+}
+BLYNK_WRITE(V50) //button to disable V49
+{
+ int ButtonState = param.asInt(); // assigning incoming value from pin V50 to ButtonState
+ if (ButtonState == 1) {
+   Blynk.setProperty(V49, "color", BLYNK_YELLOW);
+   Blynk.setProperty(V49, "onLabel", "ON");
+   Blynk.setProperty(V49, "offLabel", "OFF");
+   printf("Button V49 enable\n");
+ } else {
+   Blynk.setProperty(V49, "color", BLYNK_DARK_BLUE);
+   Blynk.virtualWrite(V49, LOW);
+   Blynk.setProperty(V49, "onLabel", "disable !");
+   Blynk.setProperty(V49, "offLabel", "disable");
+   printf("Button V49 disable\n");
+ }
 }
