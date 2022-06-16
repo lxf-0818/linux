@@ -39,6 +39,7 @@ int read_esp8266(char* msg,char * temp);
 void refresh();
 float fudge = R_RATIO;
 float fudge_mb = MBR_RATIO;
+int SQL_ButtonState =0;;
 #include <BlynkWidgets.h>
 
 void getCPUTemperature(float *v){
@@ -57,6 +58,8 @@ void refresh(){
     float v,results[4],tokens[5];
 	char str[80],cmd[20];
 	int j =0;
+	// log to mySql
+	read_esp8266("BME",str);
 
     Blynk.setProperty(V6,  "label",  "Inside Temp")  ;
 	read_esp8266("MCP",str);
@@ -101,6 +104,8 @@ void setup()
    	Blynk.begin(auth, serv, port);
   	timer.setInterval(15*60000, refresh);
 	refresh();
+   	Blynk.setProperty(V13, "color", BLYNK_GREEN);
+   	Blynk.setProperty(V13, "offLabel", "SQL OFF");
 }
 void loop()
 {
@@ -162,7 +167,6 @@ BLYNK_WRITE(V10)
     Blynk.virtualWrite(V9, fudge_mb);
 }
 BLYNK_WRITE(V14) {
-	
 	char str[80];
 	char devices[][5] = {"ADC","DS0","MCP","BME","ALL"};
   	int index =  param.asInt();
@@ -182,9 +186,9 @@ BLYNK_WRITE(V14) {
 BLYNK_WRITE(V15) {
 	char str[80];
 	float tokens[5],v;
-  	int index =  param.asInt();
 	int i =0;
 	char *token ;
+  	int index =  param.asInt();
 	switch (index ) {
   		case 1:
 			read_esp8266("BME",str);
@@ -244,4 +248,31 @@ BLYNK_WRITE(V50) //button to disable V49
    Blynk.setProperty(V49, "offLabel", "disable");
    printf("Button V49 disable\n");
  }
+}
+BLYNK_WRITE(V12) {
+	char str[80];
+	char devices[][4] = {"BME","ADC"};
+  	int index =  param.asInt();
+	if (index==2)
+		sprintf(str,"SQL_%s_%f",devices[index-1],fudge);
+		//sprintf(str,"SQL_%s_%f_%f_%f",fudge,fudge_mb,0.0,0.0);
+	else
+		sprintf(str,"SQL_%s",devices[index-1]);
+
+	read_esp8266(str,str);
+}
+BLYNK_WRITE(V13) 
+{
+ 	SQL_ButtonState = param.asInt(); // assigning incoming value from pin V50 to ButtonState
+  
+ 	if (SQL_ButtonState) {
+   		Blynk.setProperty(V13, "color", BLYNK_RED);
+   		Blynk.setProperty(V13, "onLabel", "SQL ON");
+		printf("enable sql\n");
+	}
+	else {
+   		Blynk.setProperty(V13, "color", BLYNK_GREEN);
+   		Blynk.setProperty(V13, "offLabel", "SQL OFF");
+		printf("disble sql\n");
+	}
 }
